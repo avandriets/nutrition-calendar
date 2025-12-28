@@ -4,12 +4,9 @@ import { UsersController } from './users.controller';
 import { DynamoModule } from '../dynamo/dynamo.module';
 
 @Module({
-  imports: [
-    DynamoModule,
-  ],
+  imports: [DynamoModule],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],
 })
-export class UsersModule {
-}
+export class UsersModule {}

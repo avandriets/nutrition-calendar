@@ -62,6 +62,8 @@ Resources:
           AttributeType: S
         - AttributeName: gsi1sk
           AttributeType: S
+        - AttributeName: foodId
+          AttributeType: S
       KeySchema:
         - AttributeName: accountId
           KeyType: HASH
@@ -76,6 +78,12 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+        - IndexName: GSI2_Food
+          KeySchema:
+            - AttributeName: foodId
+              KeyType: HASH
+          Projection:
+            ProjectionType: KEYS_ONLY
       SSESpecification:
         SSEEnabled: true
 

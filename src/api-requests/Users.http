@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:3000
+@accountId = acc-001
+@userId = 97c258a4-76f6-4c14-9d9e-e47a3209b2cc
+
+### Create user
+POST {{baseUrl}}/accounts/acc-001/users
+Content-Type: application/json
+
+{
+  "name": "Oleksandr",
+  "role": "owner",
+  "targetCalories": 2000,
+  "targetProtein": 140
+}
+
+### Create second user
+POST {{baseUrl}}/accounts/acc-001/users
+Content-Type: application/json
+
+{
+  "name": "Olga",
+  "targetCalories": 1400,
+  "targetProtein": 100
+}
+
+### GET Account with users
+GET {{baseUrl}}/accounts/{{accountId}}/users
+
+
+### GET User By Account and UserId
+GET {{baseUrl}}/accounts/{{accountId}}/users/{{userId}}

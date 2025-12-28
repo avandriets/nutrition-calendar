@@ -1,0 +1,13 @@
+### Create account
+POST http://localhost:3000/accounts
+Content-Type: application/json
+
+{
+  "accountId": "acc-001",
+  "name": "Test Family",
+  "country": "ES",
+  "timezone": "Europe/Madrid"
+}
+
+### GET Account
+GET http://localhost:3000/accounts/acc-001

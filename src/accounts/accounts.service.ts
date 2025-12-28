@@ -1,10 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  DynamoDBDocumentClient,
-  PutCommand,
-  GetCommand,
-  UpdateCommand,
-} from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { DYNAMO_DOCUMENT_CLIENT } from '../dynamo/dynamo.module';
 import { Account, CreateAccountDto } from './interfaces';
 import { TABLE_NAMES } from '../dynamo/dynamo.constants';
@@ -16,8 +11,7 @@ export class AccountsService {
   constructor(
     @Inject(DYNAMO_DOCUMENT_CLIENT)
     private readonly docClient: DynamoDBDocumentClient,
-  ) {
-  }
+  ) {}
 
   async createAccount(dto: CreateAccountDto): Promise<Account> {
     const account: Account = {
@@ -52,10 +46,6 @@ export class AccountsService {
     return (res.Item as Account) ?? null;
   }
 
-  /**
-   * Добавить userId к account.userIds как String Set
-   * (DocumentClient превратит JS Set в SS)
-   */
   async addUserId(accountId: string, userId: string): Promise<void> {
     await this.docClient.send(
       new UpdateCommand({
@@ -63,7 +53,7 @@ export class AccountsService {
         Key: { accountId },
         UpdateExpression: 'ADD userIds :u',
         ExpressionAttributeValues: {
-          ':u': new Set([userId]), // будет SS
+          ':u': new Set([userId]),
         },
         ConditionExpression: 'attribute_exists(accountId)',
       }),

@@ -1,0 +1,36 @@
+@foodId = 5417ca39-8c3c-45ba-8919-f4f7a1abaeb9
+@baseUrl = http://localhost:3000
+@accountId = acc-001
+@userId = 97c258a4-76f6-4c14-9d9e-e47a3209b2cc
+@user2Id = b1e2df45-05be-44c8-be39-a1e15a6f5d3b
+
+### Record in FOOD LOG
+POST {{baseUrl}}/accounts/acc-001/users/{{userId}}/food
+Content-Type: application/json
+
+{
+  "date": "2025-12-27",
+  "mealType": "breakfast",
+  "productId": "{{foodId}}",
+  "amountGrams": 60
+}
+
+### Record #2 in FOOD LOG
+POST {{baseUrl}}/accounts/acc-001/users/{{user2Id}}/food
+Content-Type: application/json
+
+{
+  "date": "2025-12-27",
+  "mealType": "breakfast",
+  "productId": "{{foodId}}",
+  "amountGrams": 50
+}
+
+### Get LOG for day user #1
+GET {{baseUrl}}/accounts/{{accountId}}/users/{{userId}}/food?date=2025-12-27
+
+### Get LOG for day user #2
+GET {{baseUrl}}/accounts/{{accountId}}/users/{{user2Id}}/food?date=2025-12-27
+
+### Get LOG for day of all users
+GET {{baseUrl}}/accounts/{{accountId}}/food?date=2025-12-27

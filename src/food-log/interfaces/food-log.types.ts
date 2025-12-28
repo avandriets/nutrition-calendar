@@ -4,19 +4,15 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | string;
 export interface FoodLogItem {
   accountId: string;
   itemId: string;
-
   userId: string;
   date: string;
   mealType: MealType;
-
   productId: string;
   amountGrams: number;
-
   calories?: number;
   protein?: number;
   fat?: number;
   carbs?: number;
-
   createdAt: string;
 }
 

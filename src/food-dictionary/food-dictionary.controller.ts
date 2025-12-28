@@ -1,17 +1,11 @@
 import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
 import { FoodDictionaryService } from './food-dictionary.service';
 
-import {
-  CreateFoodDto,
-  UpdateFoodDto,
-  CreateFoodRequestDto,
-  UpdateFoodRequestDto,
-} from './dto';
+import { CreateFoodDto, UpdateFoodDto, CreateFoodRequestDto, UpdateFoodRequestDto } from './dto';
 
 @Controller('food')
 export class FoodDictionaryController {
-  constructor(private readonly service: FoodDictionaryService) {
-  }
+  constructor(private readonly service: FoodDictionaryService) {}
 
   @Post()
   create(@Body() body: CreateFoodRequestDto) {
@@ -37,10 +31,7 @@ export class FoodDictionaryController {
   }
 
   @Patch(':foodId')
-  update(
-    @Param('foodId') foodId: string,
-    @Body() body: UpdateFoodRequestDto,
-  ) {
+  update(@Param('foodId') foodId: string, @Body() body: UpdateFoodRequestDto) {
     const dto: UpdateFoodDto = {
       name: body.name,
       caloriesPer100g: body.caloriesPer100g,

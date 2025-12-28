@@ -10,8 +10,7 @@ export class AccountsController {
   constructor(
     private readonly accountsService: AccountsService,
     private readonly usersService: UsersService,
-  ) {
-  }
+  ) {}
 
   @Post()
   async createAccount(@Body() body: CreateAccountRequestDto): Promise<Account> {
@@ -29,9 +28,7 @@ export class AccountsController {
   }
 
   @Get(':accountId/users')
-  async getAccountUsers(
-    @Param('accountId') accountId: string,
-  ): Promise<User[]> {
+  async getAccountUsers(@Param('accountId') accountId: string): Promise<User[]> {
     return this.usersService.getUsersByAccount(accountId);
   }
 }

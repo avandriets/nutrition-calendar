@@ -1,19 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  DynamoDBDocumentClient,
-  PutCommand,
-  QueryCommand,
-  UpdateCommand,
-  DeleteCommand, BatchGetCommand,
-} from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, UpdateCommand, DeleteCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
 import { randomUUID } from 'node:crypto';
 import { DYNAMO_DOCUMENT_CLIENT } from '../dynamo/dynamo.module';
-import {
-  CreateFoodLogDto,
-  FoodLogItem,
-  MealType, UpdateFoodLogDto
-} from './interfaces';
-import { DailyLogResponseDto, DailyMealGroupDto, DailyMealItemDto } from './dto';
+import { CreateFoodLogDto, FoodLogItem, MealType, UpdateFoodLogDto } from './interfaces';
+import { DailyAccountUsersLogResponseDto, DailyLogResponseDto, DailyMealGroupDto, DailyMealItemDto } from './dto';
 import type { Product } from '../food-dictionary/interfaces';
 import { TABLE_NAMES } from '../dynamo/dynamo.constants';
 
@@ -21,13 +11,12 @@ import { TABLE_NAMES } from '../dynamo/dynamo.constants';
 export class FoodLogService {
   private FOOD_DICTIONARY = TABLE_NAMES.FOOD_DICTIONARY;
   private FOOD_LOG_TABLE = TABLE_NAMES.FOOD_LOG;
-  private GSI1_NAME = 'GSI1_DailyLog';
+  private GSI1_NAME = TABLE_NAMES.GSI1_NAME;
 
   constructor(
     @Inject(DYNAMO_DOCUMENT_CLIENT)
     private readonly docClient: DynamoDBDocumentClient,
-  ) {
-  }
+  ) {}
 
   private buildGsiPk(accountId: string, date: string, userId: string): string {
     return `${accountId}#${date}#${userId}`;
@@ -50,13 +39,6 @@ export class FoodLogService {
       productId: dto.productId,
       amountGrams: dto.amountGrams,
       createdAt,
-
-      // калории/БЖУ можно либо считать здесь, либо оставить на потом
-      // calories: ...
-      // protein: ...
-      // fat: ...
-      // carbs: ...
-
       gsi1pk: this.buildGsiPk(dto.accountId, dto.date, dto.userId),
       gsi1sk: this.buildGsiSk(dto.mealType, createdAt),
     };
@@ -71,17 +53,9 @@ export class FoodLogService {
     return item;
   }
 
-  /**
-   * Дневник за день для конкретного пользователя (агрегация на бэкенде)
-   */
-  async getDailyLog(
-    accountId: string,
-    userId: string,
-    date: string,
-  ): Promise<DailyLogResponseDto> {
+  async getDailyLog(accountId: string, userId: string, date: string): Promise<DailyLogResponseDto> {
     const gsiPk = this.buildGsiPk(accountId, date, userId);
 
-    // 1. Забираем все записи за день для пользователя
     const res = await this.docClient.send(
       new QueryCommand({
         TableName: this.FOOD_LOG_TABLE,
@@ -108,17 +82,13 @@ export class FoodLogService {
       };
     }
 
-    // 2. Собираем уникальные productId
-    const uniqueProductIds = Array.from(
-      new Set(items.map((i) => i.productId)),
-    );
+    const uniqueProductIds = Array.from(new Set(items.map((i) => i.productId)));
 
-    // 3. BatchGet продуктов
     const batchRes = await this.docClient.send(
       new BatchGetCommand({
         RequestItems: {
           [this.FOOD_DICTIONARY]: {
-            Keys: uniqueProductIds.map((productId) => ({ productId })),
+            Keys: uniqueProductIds.map((productId) => ({ foodId: productId })),
           },
         },
       }),
@@ -131,13 +101,11 @@ export class FoodLogService {
       productsMap.set(p.foodId, p);
     }
 
-    // 4. Агрегируем по приёмам пищи
     const mealsMap = new Map<string, DailyMealGroupDto>();
 
     for (const item of items) {
       const product = productsMap.get(item.productId);
       if (!product) {
-        // можно залогировать отсутствие продукта и пропустить
         continue;
       }
 
@@ -209,10 +177,11 @@ export class FoodLogService {
     if (dto.amountGrams !== undefined) {
       updateExpressions.push('amountGrams = :amount');
       exprValues[':amount'] = dto.amountGrams;
-      // тут же можно пересчитать калории/БЖУ, если хочешь
     }
 
-    if (!updateExpressions.length) return;
+    if (!updateExpressions.length) {
+      return;
+    }
 
     await this.docClient.send(
       new UpdateCommand({
@@ -236,5 +205,37 @@ export class FoodLogService {
         ConditionExpression: 'attribute_exists(accountId) AND attribute_exists(itemId)',
       }),
     );
+  }
+
+  async getDailyLogForAllUsers(accountId: string, date: string, userIds: string[]): Promise<DailyAccountUsersLogResponseDto> {
+    if (!userIds.length) {
+      return {
+        accountId,
+        date,
+        users: {},
+      };
+    }
+
+    const logs: DailyLogResponseDto[] = await Promise.all(userIds.map((userId) => this.getDailyLog(accountId, userId, date)));
+
+    const users: DailyAccountUsersLogResponseDto['users'] = {};
+
+    for (const log of logs) {
+      if (log.meals.length) {
+        users[log.userId] = {
+          totalCalories: log.totalCalories,
+          totalProtein: log.totalProtein,
+          totalFat: log.totalFat,
+          totalCarbs: log.totalCarbs,
+          meals: log.meals,
+        };
+      }
+    }
+
+    return {
+      accountId,
+      date,
+      users,
+    };
   }
 }

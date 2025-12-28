@@ -1,10 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  DynamoDBDocumentClient,
-  QueryCommand,
-  UpdateCommand,
-  TransactWriteCommand,
-} from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, UpdateCommand, TransactWriteCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { DYNAMO_DOCUMENT_CLIENT } from '../dynamo/dynamo.module';
 import { CreateUserDto, User } from './interfaces';
 import { TABLE_NAMES } from '../dynamo/dynamo.constants';
@@ -17,8 +12,7 @@ export class UsersService {
   constructor(
     @Inject(DYNAMO_DOCUMENT_CLIENT)
     private readonly docClient: DynamoDBDocumentClient,
-  ) {
-  }
+  ) {}
 
   async createUser(dto: CreateUserDto): Promise<User> {
     const user: User = {
@@ -39,17 +33,17 @@ export class UsersService {
             Put: {
               TableName: this.USERS_TABLE,
               Item: user,
-              ConditionExpression:
-                'attribute_not_exists(accountId) AND attribute_not_exists(userId)',
+              ConditionExpression: 'attribute_not_exists(accountId) AND attribute_not_exists(userId)',
             },
           },
           {
             Update: {
               TableName: this.ACCOUNTS_TABLE,
               Key: { accountId: dto.accountId },
-              UpdateExpression: 'ADD userIds :u',
+              UpdateExpression: 'SET userIds = list_append(if_not_exists(userIds, :empty), :newUser)',
               ExpressionAttributeValues: {
-                ':u': new Set([dto.userId]),
+                ':empty': [],
+                ':newUser': [dto.userId],
               },
               ConditionExpression: 'attribute_exists(accountId)',
             },
@@ -73,6 +67,20 @@ export class UsersService {
     );
 
     return (res.Items as User[]) ?? [];
+  }
+
+  async getUserById(accountId: string, userId: string): Promise<User | null> {
+    const res = await this.docClient.send(
+      new GetCommand({
+        TableName: this.USERS_TABLE,
+        Key: {
+          accountId,
+          userId,
+        },
+      }),
+    );
+
+    return (res.Item as User) ?? null;
   }
 
   async deactivateUser(accountId: string, userId: string): Promise<void> {

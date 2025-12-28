@@ -4,11 +4,8 @@ import { FoodDictionaryService } from './food-dictionary.service';
 import { DynamoModule } from '../dynamo/dynamo.module';
 
 @Module({
-  imports: [
-    DynamoModule,
-  ],
+  imports: [DynamoModule],
   controllers: [FoodDictionaryController],
-  providers: [FoodDictionaryService]
+  providers: [FoodDictionaryService],
 })
-export class FoodDictionaryModule {
-}
+export class FoodDictionaryModule {}

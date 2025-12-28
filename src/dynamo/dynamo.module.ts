@@ -20,10 +20,9 @@ export const DYNAMO_DOCUMENT_CLIENT = 'DYNAMO_DOCUMENT_CLIENT';
         return DynamoDBDocumentClient.from(client, {
           marshallOptions: { removeUndefinedValues: true },
         });
-      }
-    }
+      },
+    },
   ],
   exports: [DYNAMO_DOCUMENT_CLIENT],
 })
-export class DynamoModule {
-}
+export class DynamoModule {}

@@ -7,14 +7,6 @@ import { UsersModule } from './users/users.module';
 import { FoodLogModule } from './food-log/food-log.module';
 
 @Module({
-  imports: [
-    DynamoModule,
-    FoodDictionaryModule,
-    ConfigModule.forRoot({ isGlobal: true }),
-    AccountsModule,
-    UsersModule,
-    FoodLogModule,
-  ],
+  imports: [DynamoModule, FoodDictionaryModule, ConfigModule.forRoot({ isGlobal: true }), AccountsModule, UsersModule, FoodLogModule],
 })
-export class AppModule {
-}
+export class AppModule {}

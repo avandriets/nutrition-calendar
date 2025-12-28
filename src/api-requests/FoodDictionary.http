@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:3000
+
+### Add product
+POST {{baseUrl}}/food
+Content-Type: application/json
+
+{
+  "name": "Oats",
+  "caloriesPer100g": 370,
+  "proteinPer100g": 13,
+  "carbsPer100g": 60,
+  "fatPer100g": 7
+}
+
+### Add product
+PATCH {{baseUrl}}/food/5417ca39-8c3c-45ba-8919-f4f7a1abaeb9
+Content-Type: application/json
+
+{
+  "name": "Oats #1",
+  "caloriesPer100g": 370,
+  "proteinPer100g": 13,
+  "carbsPer100g": 60,
+  "fatPer100g": 7
+}
+
+### Get all products
+GET {{baseUrl}}/food
+
+### Get product by ID
+GET {{baseUrl}}/food/5417ca39-8c3c-45ba-8919-f4f7a1abaeb9
+
+### Add product
+DELETE {{baseUrl}}/food/5417ca39-8c3c-45ba-8919-f4f7a1abaeb9
