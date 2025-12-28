@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: FoodLog project
+
+Resources:
+  FoodDictionaryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: food_dictionary
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: foodId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: foodId
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  AccountsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Accounts
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: accountId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: accountId
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: accountId
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: accountId
+          KeyType: HASH
+        - AttributeName: userId
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+
+  FoodLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FoodLog
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: accountId
+          AttributeType: S
+        - AttributeName: itemId
+          AttributeType: S
+        - AttributeName: gsi1pk
+          AttributeType: S
+        - AttributeName: gsi1sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: accountId
+          KeyType: HASH
+        - AttributeName: itemId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1_DailyLog
+          KeySchema:
+            - AttributeName: gsi1pk
+              KeyType: HASH
+            - AttributeName: gsi1sk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      SSESpecification:
+        SSEEnabled: true
+
+Outputs:
+  FoodDictionaryTableName:
+    Description: Name of the global food dictionary table
+    Value: !Ref FoodDictionaryTable
+    Export:
+      Name: !Sub '${AWS::StackName}-FoodDictionaryTableName'
+
+  FoodDictionaryTableArn:
+    Description: ARN of the global food dictionary table
+    Value: !GetAtt FoodDictionaryTable.Arn
+
+  AccountsTableName:
+    Description: Name of the accounts table
+    Value: !Ref AccountsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-AccountsTableName'
+
+  AccountsTableArn:
+    Description: ARN of the accounts table
+    Value: !GetAtt AccountsTable.Arn
+
+  UsersTableName:
+    Description: Name of the users table
+    Value: !Ref UsersTable
+    Export:
+      Name: !Sub '${AWS::StackName}-UsersTableName'
+
+  UsersTableArn:
+    Description: ARN of the users table
+    Value: !GetAtt UsersTable.Arn
+
+  FoodLogTableName:
+    Description: Name of the food log table
+    Value: !Ref FoodLogTable
+    Export:
+      Name: !Sub '${AWS::StackName}-FoodLogTableName'
+
+  FoodLogTableArn:
+    Description: ARN of the food log table
+    Value: !GetAtt FoodLogTable.Arn
