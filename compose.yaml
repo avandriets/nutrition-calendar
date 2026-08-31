@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-nutrition}
+      MARIADB_USER: ${MARIADB_USER:-nutrition}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-nutrition-dev-password}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root-dev-password}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  api:
+    image: nutrition-backend:local
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "mysql+pymysql://${MARIADB_USER:-nutrition}:${MARIADB_PASSWORD:-nutrition-dev-password}@db:3306/${MARIADB_DATABASE:-nutrition}?charset=utf8mb4"
+      DB_POOL_RECYCLE_SECONDS: ${DB_POOL_RECYCLE_SECONDS:-1800}
+      APP_WORKERS: ${APP_WORKERS:-2}
+      RUN_MIGRATIONS: "true"
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mariadb_data:

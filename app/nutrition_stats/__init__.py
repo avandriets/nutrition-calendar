@@ -1,0 +1,1 @@
+"""Nutrition statistics domain module."""
