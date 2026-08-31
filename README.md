@@ -42,6 +42,41 @@ head`. Остановить сервисы можно через `docker-compose
 Если Compose установлен как Docker CLI plugin, те же команды пишутся через
 `docker compose` вместо `docker-compose`.
 
+## Запуск API на Synology NAS с существующей MariaDB
+
+Для Synology Container Manager используйте `compose.nas.yaml`. Этот вариант
+собирает и запускает только API: отдельный контейнер MariaDB и Docker volume для
+базы не создаются. Приложение подключается к уже существующей MariaDB через
+`DATABASE_URL` из локального `.env`.
+
+Скопируйте проект в каталог NAS, например
+`/volume1/docker/nutrition-calendar`. В `.env` рядом с `compose.nas.yaml`
+укажите подключение, URL-кодируя специальные символы пароля:
+
+```dotenv
+DATABASE_URL=mysql+pymysql://user:url-encoded-password@192.168.1.160:3306/database?charset=utf8mb4
+APP_PORT=8000
+APP_WORKERS=2
+DB_POOL_RECYCLE_SECONDS=1800
+```
+
+В Container Manager откройте **Проект → Создать**, выберите каталог проекта и
+файл `compose.nas.yaml`, затем выполните сборку и запуск. При наличии SSH тот же
+запуск можно выполнить из терминала:
+
+```bash
+cd /volume1/docker/nutrition-calendar
+sudo docker compose -f compose.nas.yaml up -d --build
+sudo docker compose -f compose.nas.yaml logs -f api
+```
+
+При старте контейнер выполняет `alembic upgrade head`, после чего запускает API.
+Проверка доступности: `http://NAS_IP:8000/health`; документация API:
+`http://NAS_IP:8000/docs`.
+
+Не используйте для этого развёртывания обычный `compose.yaml`: он предназначен
+для автономного локального окружения и дополнительно запускает MariaDB в Docker.
+
 ## Подключение внешней MariaDB
 
 При локальном запуске приложение автоматически читает `.env` из корня проекта.

@@ -1,0 +1,17 @@
+services:
+  api:
+    image: nutrition-calendar-api:nas
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_HOST: "0.0.0.0"
+      APP_PORT: "8000"
+      APP_WORKERS: "${APP_WORKERS:-2}"
+      RUN_MIGRATIONS: "true"
+      DB_POOL_RECYCLE_SECONDS: "${DB_POOL_RECYCLE_SECONDS:-1800}"
+    ports:
+      - "${APP_PORT:-8000}:8000"
