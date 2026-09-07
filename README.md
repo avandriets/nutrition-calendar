@@ -6,7 +6,7 @@ Backend дневника питания для аккаунта и членов 
 
 ## Локальный запуск с SQLite
 
-Рекомендуется Python 3.12, минимальная поддерживаемая версия — 3.9.
+Рекомендуется Python 3.12, минимальная поддерживаемая версия — 3.10.
 
 ```bash
 python3 -m venv .venv
@@ -24,6 +24,30 @@ uvicorn app.main:app --reload
 - Swagger UI: <http://127.0.0.1:8000/docs>
 - OpenAPI JSON: <http://127.0.0.1:8000/openapi.json>
 - Health check: <http://127.0.0.1:8000/health>
+
+## Авторизация через Auth0
+
+Корневой endpoint и `/health` публичны. Все бизнес-endpoint требуют access token
+в заголовке `Authorization: Bearer <token>`. Подпись и claims токена проверяются
+официальным Auth0 FastAPI SDK.
+
+В Auth0 Dashboard откройте **Applications → APIs → Create API** и создайте API:
+
+- Name: `Nutrition API`
+- Identifier: `https://nutrition-api`
+- Signing Algorithm: `RS256`
+
+Identifier — это логический audience, он не обязан быть доступным URL. Затем
+добавьте в локальный `.env` (сам файл уже исключён из Git):
+
+```dotenv
+AUTH0_DOMAIN=dev-oqmeiat8opcvxeul.us.auth0.com
+AUTH0_AUDIENCE=https://nutrition-api
+```
+
+После изменения audience войдите в Angular-приложение заново, чтобы получить
+новый access token. `Client Secret` для входа пользователя через SPA здесь не
+используется.
 
 ## Запуск в Docker с MariaDB
 

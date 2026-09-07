@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from app.auth import require_auth
 from app.main import app
 
 client = TestClient(app)
@@ -17,6 +18,17 @@ def test_health_check() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_protected_route_rejects_request_without_access_token() -> None:
+    override = app.dependency_overrides.pop(require_auth)
+    try:
+        response = client.get("/products")
+    finally:
+        app.dependency_overrides[require_auth] = override
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["error"] == "invalid_request"
 
 
 def test_products_crud() -> None:

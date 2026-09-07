@@ -25,6 +25,8 @@ services:
       DB_POOL_RECYCLE_SECONDS: ${DB_POOL_RECYCLE_SECONDS:-1800}
       APP_WORKERS: ${APP_WORKERS:-2}
       RUN_MIGRATIONS: "true"
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN:?Set AUTH0_DOMAIN in .env}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:?Set AUTH0_AUDIENCE in .env}
     ports:
       - "${APP_PORT:-8000}:8000"
     depends_on:
